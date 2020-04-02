@@ -1,0 +1,66 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script>
+$(document).ready(function() {
+  populateProvince();
+  populateCity();
+  populateBrgy();
+
+  $('#province').change(function() {
+    populateCity();
+    populateBrgy();
+  });
+
+  $('#city').change(function() {
+    populateBrgy();
+  });
+
+  function populateProvince() {
+    $('#province').html('');
+    $.getJSON("refprovince.json", function(data){
+      $.each(data, function(index, object) {
+        $('#province').append(`<option data-code="${object.provCode}" value="${object.provDesc.toUpperCase()}">${object.provDesc.toUpperCase()}</option>`);
+      });
+      sortOptionElements($('#province'));
+    });
+  }
+
+  function populateCity() {
+    $('#city').html('');
+    $.getJSON("refcitymun.json", function(data){
+      $.each(data, function(index, object) {
+        if(object.provCode === $('#province option:selected').data('code')) {
+          $('#city').append(`<option data-code="${object.citymunCode}" value="${object.citymunDesc.toUpperCase()}">${object.citymunDesc.toUpperCase()}</option>`);
+        }
+      });
+      sortOptionElements($('#city'));
+    });
+  }
+
+  function populateBrgy() {
+    $('#brgy').html('');
+    $.getJSON("refbrgy.json", function(data){
+      $.each(data, function(index, object) {
+        if(object.provCode === $('#province option:selected').data('code') && object.citymunCode === $('#city option:selected').data('code')) {
+          $('#brgy').append(`<option data-code="${object.brgyCode}" value="${object.brgyDesc.toUpperCase()}">${object.brgyDesc.toUpperCase()}</option>`);
+        }
+      });
+      sortOptionElements($('#brgy'));
+    });
+  }
+
+  function sortOptionElements(selectElement) {
+    var selected = selectElement.val(),
+        options = selectElement.find('option');
+
+    options.sort(function(a, b) { return $(a).text() > $(b).text() ? 1 : -1; });
+    selectElement.html('').append(options);
+    selectElement.val(selected);
+  }
+});
+</script>
+<select id="province">
+</select>
+<select id="city">
+</select>
+<select id="brgy">
+</select>
