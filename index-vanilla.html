@@ -1,0 +1,126 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<select id="province">
+</select>
+<select id="city">
+</select>
+<select id="barangay">
+</select>
+<script>
+GetJson();
+
+function GetJson(){
+  $.getJSON("refprovince.json", function(data){
+    provinces = data;
+    populateProvince();
+
+  });
+  $.getJSON("refcitymun.json", function(data){
+    cities = data;
+    populateCity();
+  });
+
+  $.getJSON("refbrgy.json", function(data){
+    barangays = data;
+    populateBrgy();
+  });
+}
+
+$('#province').change(function() {
+  populateCity();
+  populateBrgy();
+});
+
+$('#city').change(function() {
+  populateBrgy();
+});
+
+function setSelectedOption(option,data,dropdown,title){
+  option = document.createElement('option');
+  option.innerHTML = title;
+  option.disabled = true;
+  option.selected = true;
+  option.setAttribute('value', 0);
+  data.appendChild(option);
+  dropdown.appendChild(data);
+}
+
+function populateProvince() {
+  var dropdown = document.getElementById('province'),
+  data = document.createDocumentFragment();
+
+  var option;
+  dropdown.innerHTML = '';
+  setSelectedOption(option,data,dropdown,'SELECT PROVINCE')
+
+  for ( var province of provinces ) {
+    option = document.createElement('option');
+
+    option.setAttribute('data-code', province.provCode);
+    option.setAttribute('value', province.provDesc.toUpperCase());
+    option.innerHTML = province.provDesc.toUpperCase();
+    data.appendChild(option);
+  }
+
+  dropdown.appendChild(data);
+  sortOptionElements(dropdown);
+}
+
+function populateCity() {
+  var province = document.getElementById('province'),
+  dropdown = document.getElementById('city'),
+  data = document.createDocumentFragment();
+
+  var option;
+  dropdown.innerHTML = '';
+  setSelectedOption(option,data,dropdown,'SELECT CITY');
+
+  for ( var city of cities ) {
+    if ( city.provCode === province.options[province.selectedIndex].getAttribute('data-code') ) {
+      option = document.createElement('option');
+
+      option.setAttribute('data-code', city.citymunCode);
+      option.setAttribute('value', city.citymunDesc.toUpperCase());
+      option.innerHTML = city.citymunDesc.toUpperCase();
+      data.appendChild(option);
+    }
+  }
+
+  dropdown.appendChild(data);
+  sortOptionElements(dropdown);
+}
+
+function populateBrgy() {
+  var province = document.getElementById('province'),
+  city = document.getElementById('city'),
+  dropdown = document.getElementById('barangay'),
+  data = document.createDocumentFragment();
+
+  var option;
+  dropdown.innerHTML = '';
+  setSelectedOption(option,data,dropdown,'SELECT BARANGAY');
+
+
+  for(var barangay of barangays ) {
+    if ( barangay.provCode === province.options[province.selectedIndex].getAttribute('data-code') && barangay.citymunCode === city.options[city.selectedIndex].getAttribute('data-code') ) {
+      option = document.createElement('option');
+
+      option.setAttribute('data-code', barangay.brgyCode);
+      option.setAttribute('value', barangay.brgyDesc.toUpperCase());
+      option.innerHTML = barangay.brgyDesc.toUpperCase();
+      data.appendChild(option);
+    }
+  }
+
+  dropdown.appendChild(data);
+  sortOptionElements(dropdown);
+}
+
+function sortOptionElements(selectElement) {
+  [].slice.call(selectElement.children).sort(function(a, b) {
+    return a.value > b.value ? 1 : -1;
+  }).forEach(function(element) {
+    selectElement.appendChild(element);
+  });
+}
+
+</script>
